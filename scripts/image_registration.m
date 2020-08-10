@@ -12,33 +12,48 @@ clc
 % the unregistered image was taken from a distance and the topography is relatively 
 % flat, it is likely that most of the distortion is projective.
 % read the right camera image
-load('cam_1/cameraParamsCam1.mat')
-unregisteredLeft = imread('cam_1/Cam_1_Image10.jpg');
+load('../cam1_params.mat')
+cameraParamsCam1 = cameraParams;
+D1 = D;
+F1 = F;
+m1 = m;
+unregisteredLeft = double(imread('../cam_1/Cam_1_Image15.jpg'));
+unregisteredLeft = (unregisteredLeft - D1)./(F1-D1) .* m1;
 unregisteredLeft = undistortImage(unregisteredLeft, cameraParamsCam1);
 subplot(1,3,1);
 imshow(unregisteredLeft);
 hold on;
-title('Left outer Camera')
+title('Left outer Camera (1:C6)')
 %%
 %Read the reference camera image into the workspace. This image 
 % is an orthophoto that has already been registered to the ground.
 % this is the reference image
-load('cam_3/cameraParamsCam3.mat')
-ortho = imread('cam_3/Cam_3_Image10.jpg');
-ortho = undistortImage(ortho, cameraParamsCam3);
+load('../cam2_params.mat')
+cameraParamsCam2 = cameraParams;
+D2 = D;
+F2 = F;
+m2 = m;
+ortho = double(imread('../cam_2/Cam_2_Image15.jpg'));
+ortho = (ortho - D2)./(F2-D2) .* m2;
+ortho = undistortImage(ortho, cameraParamsCam2);
 subplot(1, 3, 2);
 imshow(ortho)
 hold on;
-title('reference camera (middle)')
+title('reference camera (middle; 2:C7)')
 %% 
 % read the right camera image
-load('cam_2/cameraParamsCam2.mat')
-unregisteredRight = imread('cam_2/Cam_2_Image10.jpg');
-unregisteredRight = undistortImage(unregisteredRight, cameraParamsCam2);
+load('../cam3_params.mat')
+cameraParamsCam3 = cameraParams;
+D3 = D;
+F3 = F;
+m3 = m;
+unregisteredRight = double(imread('../cam_3/Cam_3_Image15.jpg'));
+unregisteredRight = (unregisteredRight - D3)./(F3-D3) .* m3;
+unregisteredRight = undistortImage(unregisteredRight, cameraParamsCam3);
 subplot(1,3,3);
 imshow(unregisteredRight);
 hold on;
-title('Right outer camera')
+title('Right outer camera (3:C2)')
 
 %% Select Control Point Pairs
 % To select control points interactively, open the Control Point Selection tool 
@@ -89,8 +104,8 @@ end
 
 % tLC = fitgeotrans(movingPointsLeft,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
 % tRC = fitgeotrans(movingPointsRight,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
-tLC = fitgeotrans(movingPointsLeft,fixedPoints,'projective');% non reflective similarity
-tRC = fitgeotrans(movingPointsRight,fixedPoints,'projective');% non reflective similarity
+tLC = fitgeotrans(movingPointsLeft,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
+tRC = fitgeotrans(movingPointsRight,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
 
 % See Transformation types here: https://www.mathworks.com/help/images/ref/fitgeotrans.html#bvonaug
 
@@ -124,3 +139,13 @@ title('Center cam image')
 subplot(1,3,3);
 imshow(registeredRight)
 title('registered Right outer cam image')
+
+%% Save registration and Cropping params
+disp('Manual: cut 250 px on each left and right side and 35 pixels top, 10 bottom')
+top = 35;
+bot = 10;
+left = 250;
+right = 250;
+save('../im_registration_params.mat','tLC','tRC','Rfixed',...
+    'top', 'bot', 'left', 'right')
+

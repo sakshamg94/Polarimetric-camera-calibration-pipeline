@@ -6,7 +6,7 @@ close all
 %imaqreset
 %% basic acquisition settings
 % num Frames from how many you need
-numFrames = 37; %more than 1k does not work with the exposure, has be be >=2
+numFrames = 150; %more than 1k does not work with the exposure, has be be >=2
 acquiring = 1;
 %% Create a videoinput with the desired video format and get access to the
 %camera device specific properties.
@@ -18,12 +18,12 @@ acquiring = 1;
 % (left)v1:v2(mid):v3(right) (absolute lab & code frame)
 gigecamlist
 % check the numbering each time please. It keeps changing!!
-v1 = videoinput('gige',1, 'Mono8'); % C6
-s1 = v1.Source;
+v1 = videoinput('gige',1, 'Mono8'); % C6    
+s1 = v1.Source; % open and check s1 is C6
 v2 = videoinput('gige',2, 'Mono8'); % C7
-s2 = v2.Source;
+s2 = v2.Source; % open and check s1 is C7
 v3 = videoinput('gige',3, 'Mono8'); % C2
-s3 = v3.Source;
+s3 = v3.Source; % open and check s1 is C2
 %% Specify 'hardware' videoinput trigger type for func generator triggering
 triggerconfig(v1, 'hardware', 'DeviceSpecific', 'DeviceSpecific');
 triggerconfig(v2, 'hardware', 'DeviceSpecific', 'DeviceSpecific');
@@ -98,6 +98,7 @@ s3.PacketSize = pktSize;
 s1.PacketDelay = delay;
 s2.PacketDelay = delay;
 s3.PacketDelay = delay;
+
 % these are necessary bec packet delay function causes trigger to go off
 s1.TriggerMode = 'On'; 
 s2.TriggerMode = 'On';
@@ -108,9 +109,15 @@ wait([v1, v2 ,v3], 60*recordTime)
 
 % Transfer acquired frames and timestamps from acquisition input buffer
 % into workspace
+disp('Acquiring data...')
 [data1, ts1] = getdata(v1, v1.FramesAvailable);
 [data2, ts2] = getdata(v2, v2.FramesAvailable);
 [data3, ts3] = getdata(v3, v3.FramesAvailable);
+% size(data1)
+% H(1026) Image height, as specified in the object's ROIPosition property
+% W(1282) Image width, as specified in the object's ROIPosition property
+% B(1) Number of color bands, as specified in the NumberOfBands property
+% F(numFrames) The number of frames returned
 
 %%% Display acquired frames and plot timestamp differences, 
 %which correspond to the 25 Hz frequency of the external triggering signal.
@@ -129,7 +136,7 @@ imaqmontage(data3)
 % legend('ch1', 'ch2', 'ch3')
 % xlabel('Frame index');
 % ylabel('diff(Timestamp) (s)');
-% % 
+% 
 % figure; hold on;
 % plot(ts1, 'k*-')
 % plot(ts2, 'r*-')
@@ -139,44 +146,45 @@ imaqmontage(data3)
 % ylabel('Timestamp (s)');
 
 %% save the frames for calibration
-for x = numFrames
-    filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data1(:,:,:,x),strcat('cam_1_Analyzer_Matrix/',filename));
-end
-for x = numFrames
-    filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data2(:,:,:,x),strcat('cam_2_Analyzer_Matrix/',filename));
-end
-for x = numFrames %bh5 m
-    filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data3(:,:,:,x),strcat('cam_3_Analyzer_Matrix/',filename));
-end
+disp('Acq done, saving frames...')
+% for x = numFrames
+%     filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,:,x),strcat('cam_1_Analyzer_Matrix/',filename));
+% end
+% for x = numFrames
+%     filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,:,x),strcat('cam_2_Analyzer_Matrix/',filename));
+% end
+% for x = numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,:,x),strcat('cam_3_Analyzer_Matrix/',filename));
+% end
 
-                            % flat ones
-% for x = 1:numFramess
-%     filename=strcat('Cam_1_Image',int2str(x),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data1(:,:,:,x),strcat('cam_1_flat/',filename));
-% end
-% for x = 1:numFrames
-%     filename=strcat('Cam_2_Image',int2str(x),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data2(:,:,:,x),strcat('cam_2_flat/',filename));
-% end
-% for x = 1:numFrames %bh5 m
-%     filename=strcat('Cam_3_Image',int2str(x),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data3(:,:,:,x),strcat('cam_3_flat/',filename));
-% end
+% flat, dark, expt ones
+for x = 1:numFrames
+    filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
+end
+for x = 1:numFrames
+    filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
+end
+for x = 1:numFrames %bh5 m
+    filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
+end
 %%
-% if acquiring~=1
-%     delete(v1)
-%     delete(v2)
-%     delete(v3)
-% end
+if acquiring~=1
+    delete(v1)
+    delete(v2)
+    delete(v3)
+end
 %% rectification of images using stereoparametrs
 % load('stereoParams23.mat')
 % %[J1,J2] = rectifyStereoImages(data2(:,:,1,1),data3(:,:,1,1),stereoParams23)
