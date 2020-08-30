@@ -1,4 +1,4 @@
-See files
+See files (do maual geometric calirbration, use only flat images do no introduce tilt when camera looking at an angle, use only non-tilted images; for flat field, make sure to illumninate well -- check flat field correction)
 
 For the function generator, just use the manual instructions [here](http://web.mit.edu/8.13/8.13d/manuals/bnc-555-digital-delay-generator.pdf)
 
