@@ -1,4 +1,4 @@
-See files (do maual geometric calirbration, use only flat images do no introduce tilt when camera looking at an angle, use only non-tilted images; for flat field, make sure to illumninate well -- check flat field correction)
+See files (do maual geometric calirbration, use only flat images do no introduce tilt when camera looking at an angle, use only non-tilted images; for flat field, make sure to illumninate well -- check flat field correction; do not at any stage convert any images to double -- not even in2double (it converts intensities from 0-255 to 0-1 range)
 
 For the function generator, just use the manual instructions [here](http://web.mit.edu/8.13/8.13d/manuals/bnc-555-digital-delay-generator.pdf)
 
