@@ -6,20 +6,22 @@ clc
 % This example shows how to register two images by selecting control points 
 % common to both images and inferring a geometric transformation that aligns the 
 % control points.
+image_num = 1;
 %% Read Images
 % Read the left camera image into the workspace. This image was 
 % taken from an airplane and is distorted relative to the orthophoto. Because 
 % the unregistered image was taken from a distance and the topography is relatively 
 % flat, it is likely that most of the distortion is projective.
 % read the right camera image
-load('../cam1_params.mat')
+load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam1_params.mat')
 cameraParamsCam1 = cameraParams;
 D1 = D;
 F1 = F;
 m1 = m;
-unregisteredLeft = double(imread('../cam_1/Cam_1_Image15.jpg'));
-unregisteredLeft = (unregisteredLeft - D1)./(F1-D1) .* m1;
-unregisteredLeft = undistortImage(unregisteredLeft, cameraParamsCam1);
+unregisteredLeft = imread(['C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam_1\Cam_1_Image',num2str(image_num),'.jpg']);
+% unregisteredLeft = (unregisteredLeft - D1)./(F1-D1) .* m1;
+% figure(23); imshow(unregisteredLeft)
+% unregisteredLeft = undistortImage(unregisteredLeft, cameraParamsCam1);
 subplot(1,3,1);
 imshow(unregisteredLeft);
 hold on;
@@ -28,28 +30,29 @@ title('Left outer Camera (1:C6)')
 %Read the reference camera image into the workspace. This image 
 % is an orthophoto that has already been registered to the ground.
 % this is the reference image
-load('../cam2_params.mat')
+load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam2_params.mat')
 cameraParamsCam2 = cameraParams;
 D2 = D;
 F2 = F;
 m2 = m;
-ortho = double(imread('../cam_2/Cam_2_Image15.jpg'));
-ortho = (ortho - D2)./(F2-D2) .* m2;
-ortho = undistortImage(ortho, cameraParamsCam2);
+ortho = imread(['C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam_2\Cam_2_Image',num2str(image_num),'.jpg']);
+% figure(24); imshow(ortho)
+% ortho = (ortho - D2)./(F2-D2) .* m2;
+% ortho = undistortImage(ortho, cameraParamsCam2);
 subplot(1, 3, 2);
 imshow(ortho)
 hold on;
 title('reference camera (middle; 2:C7)')
 %% 
 % read the right camera image
-load('../cam3_params.mat')
+load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam3_params.mat')
 cameraParamsCam3 = cameraParams;
 D3 = D;
 F3 = F;
 m3 = m;
-unregisteredRight = double(imread('../cam_3/Cam_3_Image15.jpg'));
-unregisteredRight = (unregisteredRight - D3)./(F3-D3) .* m3;
-unregisteredRight = undistortImage(unregisteredRight, cameraParamsCam3);
+unregisteredRight = imread(['C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam_3\Cam_3_Image',num2str(image_num),'.jpg']);
+% unregisteredRight = (unregisteredRight - D3)./(F3-D3) .* m3;
+% unregisteredRight = undistortImage(unregisteredRight, cameraParamsCam3);
 subplot(1,3,3);
 imshow(unregisteredRight);
 hold on;
@@ -104,8 +107,8 @@ end
 
 % tLC = fitgeotrans(movingPointsLeft,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
 % tRC = fitgeotrans(movingPointsRight,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
-tLC = fitgeotrans(movingPointsLeft,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
-tRC = fitgeotrans(movingPointsRight,fixedPoints,'nonreflectivesimilarity');% non reflective similarity
+tLC = fitgeotrans(movingPointsLeft,fixedPoints,'projective');% non reflective similarity
+tRC = fitgeotrans(movingPointsRight,fixedPoints,'projective');% non reflective similarity
 
 % See Transformation types here: https://www.mathworks.com/help/images/ref/fitgeotrans.html#bvonaug
 
@@ -128,13 +131,17 @@ subplot(1,2,2);
 imshowpair(ortho,registeredRight,'blend')
 title('Right registered image -- blended with center')
 
+close; figure(8);
+imshow((imread('C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam_2_expt\Cam_2_Image1.png')))
+roi = drawrectangle;
+roi.Position
 %% Display the overalapping regions shifted and ready for px to px mapping
 figure;
 subplot(1,3,1);
 imshow(registeredLeft)
 title('registered Left outer cam image')
 subplot(1,3,2);
-imshow(ortho)
+imshow(imadjust(ortho))
 title('Center cam image')
 subplot(1,3,3);
 imshow(registeredRight)
@@ -142,10 +149,14 @@ title('registered Right outer cam image')
 
 %% Save registration and Cropping params
 disp('Manual: cut 250 px on each left and right side and 35 pixels top, 10 bottom')
-top = 35;
-bot = 10;
-left = 250;
-right = 250;
-save('../im_registration_params.mat','tLC','tRC','Rfixed',...
+% top = 50;
+% bot = 50;
+% left = 200;
+% right = 200;
+top = floor(roi.Position(2));
+bot = floor(1026 - roi.Position(2) - roi.Position(4));
+left = floor(roi.Position(1));
+right = floor(1282 - roi.Position(1) - roi.Position(3));
+save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\im_registration_params.mat','tLC','tRC','Rfixed',...
     'top', 'bot', 'left', 'right')
 

@@ -4,7 +4,7 @@ for cam = 1:3
         '\cam_',num2str(cam),'_Analyzer_Matrix'];
     
     % number of images to correct
-    srcNumIm = 36;
+    srcNumIm = 18;
     
     % number of flat field images
     numIm = 20; 
@@ -23,8 +23,9 @@ for cam = 1:3
         raw_img = double(raw_img);
         
         % Apply Radiometric (flat field) correction
-        correct_img = (raw_img - D)./(F-D) .* m;
-        
+%         F = 255*ones(1026, 1282);
+%         correct_img = (raw_img - D)./(F-D) .* m;
+        correct_img = raw_img;
         % Apply Geometric correction 
         correct_img = undistortImage(correct_img, cameraParams);
         

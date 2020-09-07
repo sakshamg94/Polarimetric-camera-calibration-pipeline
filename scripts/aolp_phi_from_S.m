@@ -1,5 +1,5 @@
 %% Solve for AOLP
-% load('../final_S_map.mat')
+% load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\final_S_map.mat')
 aolp = zeros(size(final_S_map,1),size(final_S_map,2),size(final_S_map,4));
 for i = 1:1:size(final_S_map,1)
     for j= 1:1:size(final_S_map,2)
@@ -11,18 +11,19 @@ for i = 1:1:size(final_S_map,1)
 end
 phi = dolp + pi/2;
 %% save
-save('../aolp_phi.mat','aolp','phi')
+save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\aolp_phi.mat','aolp','phi')
 %% plot
 x = 1:1:size(final_S_map,2);
 y = 1:1:size(final_S_map,1);
 [X,Y] = meshgrid(x,y);
 
 
-v = VideoWriter('aolp.avi');
+v = VideoWriter('C:\Users\tracy\Downloads\saksham_polarimetric_cam\aolp.avi');
 open(v);
-for t = 1:1:20
+for t = 1:3:30
    t
-   contourf(X,Y,phi(:,:,t));
+   figure(1);
+   contourf(X,Y,phi(:,:,t), 3);
    colorbar();
    frame = getframe(gcf);
    writeVideo(v,frame);

@@ -6,7 +6,7 @@ close all
 %imaqreset
 %% basic acquisition settings
 % num Frames from how many you need
-numFrames = 150; %more than 1k does not work with the exposure, has be be >=2
+numFrames = 2; %more than 1k does not work with the exposure, has be be >=2
 acquiring = 1;
 %% Create a videoinput with the desired video format and get access to the
 %camera device specific properties.
@@ -20,10 +20,13 @@ gigecamlist
 % check the numbering each time please. It keeps changing!!
 v1 = videoinput('gige',1, 'Mono8'); % C6    
 s1 = v1.Source; % open and check s1 is C6
+assert(s1.DeviceUserID(2) == '6', 'check_cam_numbering')
 v2 = videoinput('gige',2, 'Mono8'); % C7
 s2 = v2.Source; % open and check s1 is C7
+assert(s2.DeviceUserID(2) == '7', 'check_cam_numbering')
 v3 = videoinput('gige',3, 'Mono8'); % C2
 s3 = v3.Source; % open and check s1 is C2
+assert(s3.DeviceUserID(2) == '2', 'check_cam_numbering')
 %% Specify 'hardware' videoinput trigger type for func generator triggering
 triggerconfig(v1, 'hardware', 'DeviceSpecific', 'DeviceSpecific');
 triggerconfig(v2, 'hardware', 'DeviceSpecific', 'DeviceSpecific');
@@ -145,8 +148,44 @@ imaqmontage(data3)
 % xlabel('Frame index');
 % ylabel('Timestamp (s)');
 
-%% save the frames for calibration
-disp('Acq done, saving frames...')
+%% save the frames for Geometric calibration (checkerboard)
+% disp('Acq done, saving frames...')
+% for x = numFrames
+%     filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,:,x),strcat('cam_1/',filename));
+% end
+% for x = numFrames
+%     filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,:,x),strcat('cam_2/',filename));
+% end
+% for x = numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,:,x),strcat('cam_3/',filename));
+% end
+
+%% save the frames for flat and dark field calibration 
+% flat, dark, expt ones
+% for x = 1:numFrames
+%     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
+% end
+% for x = 1:numFrames
+%     filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
+% end
+% for x = 1:numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
+% end
+
+%% save the frames for Analyzer Matrix calibration
+% disp('Acq done, saving frames...')
 % for x = numFrames
 %     filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
 %     delete(filename);
@@ -162,7 +201,25 @@ disp('Acq done, saving frames...')
 %     delete(filename);
 %     imwrite(data3(:,:,:,x),strcat('cam_3_Analyzer_Matrix/',filename));
 % end
+%% flat, dark
+% %flat, dark, %expt ones
+% for x = 1:numFrames
+%     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,1,x),strcat('cam_1_dark/',filename));
+% end
+% for x = 1:numFrames
+%     filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,1,x),strcat('cam_2_dark/',filename));
+% end
+% for x = 1:numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,1,x),strcat('cam_3_dark/',filename));
+% end
 
+%% expt
 % flat, dark, expt ones
 for x = 1:numFrames
     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
@@ -179,12 +236,13 @@ for x = 1:numFrames %bh5 m
     delete(filename);
     imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
 end
+
 %%
-if acquiring~=1
-    delete(v1)
-    delete(v2)
-    delete(v3)
-end
+% if acquiring~=1
+%     delete(v1)
+%     delete(v2)
+%     delete(v3)
+% end
 %% rectification of images using stereoparametrs
 % load('stereoParams23.mat')
 % %[J1,J2] = rectifyStereoImages(data2(:,:,1,1),data3(:,:,1,1),stereoParams23)
