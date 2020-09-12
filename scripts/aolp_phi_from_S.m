@@ -9,7 +9,11 @@ for i = 1:1:size(final_S_map,1)
         end
     end
 end
-phi = dolp + pi/2;
+phi = (aolp + pi/2)*180/pi;
+%%
+figure;
+imshow(uint8(phi)); hold on; 
+title('projected surface orientation (degrees)')
 %% save
 save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\aolp_phi.mat','aolp','phi')
 %% plot

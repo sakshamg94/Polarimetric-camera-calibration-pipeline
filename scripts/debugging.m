@@ -1,6 +1,6 @@
 % show the 3 raw images
-figure(2); subplot(1,3,1); imshow(Cam_1_Image1); subplot(1,3,2); 
-imshow(Cam_2_Image1); subplot(1,3,3); imshow(Cam_3_Image1);
+figure(2); subplot(1,3,1); imshow(final_map(:,:,1)); subplot(1,3,2); 
+imshow(final_map(:,:,2)); subplot(1,3,3); imshow(final_map(:,:,3));
 
 % show the mapped left and right camera images (more precisely, their 
 % differences from the center image)
@@ -56,7 +56,12 @@ imshow(aolp(:,:,1))
 imshow(theta(:,:,1))
 imshow(dolp(:,:,1))
 
-%%
+%% smoothing filter (could use median instead of mean if you like --
+% does not matter much)
 fun = @(x) mean(x(:));
-B = nlfilter(dolp(:,:,1),[2 2],fun); 
-montage({dolp(:,:,1), B})
+final_map(:,:,1)= nlfilter(final_map(:,:,1),[3 3],fun); 
+final_map(:,:,2)= nlfilter(final_map(:,:,2),[3 3],fun);
+final_map(:,:,3)= nlfilter(final_map(:,:,3),[3 3],fun);
+% % montage({dolp(:,:,1), B})
+figure(2); subplot(1,3,1); imshow(final_map(:,:,1)); subplot(1,3,2); 
+imshow(final_map(:,:,2)); subplot(1,3,3); imshow(final_map(:,:,3));

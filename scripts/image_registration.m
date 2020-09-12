@@ -148,15 +148,20 @@ imshow(registeredRight)
 title('registered Right outer cam image')
 
 %% Save registration and Cropping params
+% for cropping params -- open themiddle camera image (Cam_2) and figur
+% manually using a rectangle
 disp('Manual: cut 250 px on each left and right side and 35 pixels top, 10 bottom')
 % top = 50;
 % bot = 50;
 % left = 200;
 % right = 200;
+imshow(Cam_2_Image1);
+roi = drawrectangle;
 top = floor(roi.Position(2));
 bot = floor(1026 - roi.Position(2) - roi.Position(4));
 left = floor(roi.Position(1));
 right = floor(1282 - roi.Position(1) - roi.Position(3));
-save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\im_registration_params.mat','tLC','tRC','Rfixed',...
-    'top', 'bot', 'left', 'right')
-
+% save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\im_registration_params.mat','tLC','tRC','Rfixed',...
+%     'top', 'bot', 'left', 'right')
+save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\im_registration_params.mat',...
+    'top', 'bot', 'left', 'right', '-append')

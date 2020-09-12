@@ -5,18 +5,29 @@
 % Crop images to contain overlapping region
 % Save the resulting mat-files -- keep double format
 %%
+src = '_Analyzer_Matrix'; %'_Analyzer_Matrix'; % or '_expt' % extension of teh source folder 
+srcNumIm = 18; % 18 for analyzer
+
+if strcmp(src,'_Analyzer_Matrix')
+    savefname = 'final_map_Analyzer_Images.mat';
+    im_ext = '.jpg';
+elseif strcmp(src,'_expt')
+    savefname = 'final_map.mat';
+    im_ext = '.png';
+else 
+end
+
+%%
 % load the image registration map transform and cropping params
 load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\im_registration_params.mat')
 
-% number of images to correct
-srcNumIm = 1;
 
 % map of the overlapped images from the 3 cameras
-final_map = zeros(1026-top-bot, 1282-left-right, 3, srcNumIm, 'uint8');
+new_map = zeros(1026-top-bot, 1282-left-right, 3, srcNumIm, 'uint8');
 
 for cam = 1:3
     srcImFolder = ['C:\Users\tracy\Downloads\saksham_polarimetric_cam\',...
-        '\cam_',num2str(cam),'_expt'];
+        '\cam_',num2str(cam),src];
     
     %Radiometric calib params
     %     load(['../cam', num2str(cam),'_params.mat'])
@@ -24,7 +35,7 @@ for cam = 1:3
     for x = 1:srcNumIm
         
         raw_img = imread([srcImFolder, '\Cam_',num2str(cam),...
-            '_Image',num2str(x),'.png']);
+            '_Image',num2str(x),im_ext]);
         %         raw_img = double(raw_img);
         correct_img = raw_img;
         
@@ -43,11 +54,12 @@ for cam = 1:3
         end
         
         % Crop images & save to final map to contain overlapping region
-        final_map(:,:,cam,x) = ...
+        new_map(:,:,cam,x) = ...
             correct_img(top+1:1026-bot, left+1:1282-right);
     end
     
     % write camera sensitive params
     % For variables larger than 2GB use MAT-file version 7.3 or later.
-    save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\final_map.mat', 'final_map', '-v7.3'); % about 3-4 mins
+    file = ['C:\Users\tracy\Downloads\saksham_polarimetric_cam\',savefname];
+    save(file , 'new_map', '-v7.3'); % about 3-4 mins
 end

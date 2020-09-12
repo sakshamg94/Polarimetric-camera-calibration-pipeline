@@ -220,7 +220,6 @@ imaqmontage(data3)
 % end
 
 %% expt
-% flat, dark, expt ones
 for x = 1:numFrames
     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
     delete(filename);
