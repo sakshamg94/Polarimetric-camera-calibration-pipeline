@@ -29,8 +29,8 @@ for cam = 1:3
     srcImFolder = ['C:\Users\tracy\Downloads\saksham_polarimetric_cam\',...
         '\cam_',num2str(cam),src];
     
-    %Radiometric calib params
-    %     load(['../cam', num2str(cam),'_params.mat'])
+%     Radiometric calib params
+        load(['C:\Users\tracy\Downloads\saksham_polarimetric_cam\cam', num2str(cam),'_params.mat'])
     
     for x = 1:srcNumIm
         
@@ -42,8 +42,8 @@ for cam = 1:3
         % Apply Radiometric (flat field) correction
         %         correct_img = (raw_img - D)./(F-D) .* m;
         
-        % Apply Geometric correction
-        %         correct_img = undistortImage(correct_img, cameraParams);
+%         Apply Geometric correction
+        correct_img = undistortImage(correct_img, cameraParams);
         
         % Apply Image Mapping via Image Registration
         if cam==1
@@ -63,3 +63,5 @@ for cam = 1:3
     file = ['C:\Users\tracy\Downloads\saksham_polarimetric_cam\',savefname];
     save(file , 'new_map', '-v7.3'); % about 3-4 mins
 end
+figure(2); subplot(1,3,1); imshow(new_map(:,:,1)); subplot(1,3,2); 
+imshow(new_map(:,:,2)); subplot(1,3,3); imshow(new_map(:,:,3));

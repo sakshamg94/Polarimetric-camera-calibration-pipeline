@@ -63,5 +63,9 @@ final_map(:,:,1)= nlfilter(final_map(:,:,1),[3 3],fun);
 final_map(:,:,2)= nlfilter(final_map(:,:,2),[3 3],fun);
 final_map(:,:,3)= nlfilter(final_map(:,:,3),[3 3],fun);
 % % montage({dolp(:,:,1), B})
-figure(2); subplot(1,3,1); imshow(final_map(:,:,1)); subplot(1,3,2); 
-imshow(final_map(:,:,2)); subplot(1,3,3); imshow(final_map(:,:,3));
+figure(2); subplot(1,3,1); imshow(new_map(:,:,1)); subplot(1,3,2); 
+imshow(new_map(:,:,2)); subplot(1,3,3); imshow(new_map(:,:,3));
+
+%% camera calibration
+figure
+showExtrinsics(cameraParams);

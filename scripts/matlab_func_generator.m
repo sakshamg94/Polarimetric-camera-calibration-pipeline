@@ -6,7 +6,10 @@ close all
 %imaqreset
 %% basic acquisition settings
 % num Frames from how many you need
-numFrames = 2; %more than 1k does not work with the exposure, has be be >=2
+% # Last image for camera geometric calibration has to be stable and 
+% # static held pattern for all the 3 cameras
+numFrames = 2; %more than 1k does not work with the exposure, has be >=2
+exposure = 6000;
 acquiring = 1;
 %% Create a videoinput with the desired video format and get access to the
 %camera device specific properties.
@@ -18,13 +21,16 @@ acquiring = 1;
 % (left)v1:v2(mid):v3(right) (absolute lab & code frame)
 gigecamlist
 % check the numbering each time please. It keeps changing!!
-v1 = videoinput('gige',1, 'Mono8'); % C6    
+
+v1 = videoinput('gige',2, 'Mono8'); % C6    
 s1 = v1.Source; % open and check s1 is C6
 assert(s1.DeviceUserID(2) == '6', 'check_cam_numbering')
-v2 = videoinput('gige',2, 'Mono8'); % C7
+
+v2 = videoinput('gige',3, 'Mono8'); % C7
 s2 = v2.Source; % open and check s1 is C7
 assert(s2.DeviceUserID(2) == '7', 'check_cam_numbering')
-v3 = videoinput('gige',3, 'Mono8'); % C2
+
+v3 = videoinput('gige',1, 'Mono8'); % C2
 s3 = v3.Source; % open and check s1 is C2
 assert(s3.DeviceUserID(2) == '2', 'check_cam_numbering')
 %% Specify 'hardware' videoinput trigger type for func generator triggering
@@ -44,7 +50,7 @@ s1.TriggerActivation = 'RisingEdge';
 s1.TriggerMode = 'On';
 % Specify a constant exposure time for each frame
 s1.ExposureMode = 'Timed';
-s1.ExposureTimeAbs = 5000;
+s1.ExposureTimeAbs = exposure; %default is 5000 microseconds
 %
 s2.TriggerSelector = 'FrameStart';
 s2.TriggerSource = 'Line1';
@@ -52,7 +58,7 @@ s2.TriggerActivation = 'RisingEdge';
 s2.TriggerMode = 'On';
 % Specify a constant exposure time for each frame
 s2.ExposureMode = 'Timed';
-s2.ExposureTimeAbs = 5000;
+s2.ExposureTimeAbs = exposure;
 %
 s3.TriggerSelector = 'FrameStart';
 s3.TriggerSource = 'Line1';
@@ -60,7 +66,7 @@ s3.TriggerActivation = 'RisingEdge';
 s3.TriggerMode = 'On';
 % Specify a constant exposure time for each frame
 s3.ExposureMode = 'Timed';
-s3.ExposureTimeAbs = 5000;
+s3.ExposureTimeAbs = exposure;
 
 %% Frame Trigger starter
 % Specify total number of frames to be acquired
@@ -132,6 +138,14 @@ imaqmontage(data2)
 figure(53);
 imaqmontage(data3)
 
+
+% for i = 1:10
+%     figure(70+i)
+%     subplot(3,1,1); imshow(data1(:,:,1,i)); 
+%     subplot(3,1,2); imshow(data2(:,:,1,i)); 
+%     subplot(3,1,3); imshow(data3(:,:,1,i));
+% end
+
 % figure; hold on;
 % plot(diff(ts1), 'k*-')
 % plot(diff(ts2), 'r*-')
@@ -147,6 +161,8 @@ imaqmontage(data3)
 % legend('ch1', 'ch2', 'ch3')
 % xlabel('Frame index');
 % ylabel('Timestamp (s)');
+% 
+
 
 %% save the frames for Geometric calibration (checkerboard)
 % disp('Acq done, saving frames...')
@@ -155,12 +171,12 @@ imaqmontage(data3)
 %     delete(filename);
 %     imwrite(data1(:,:,:,x),strcat('cam_1/',filename));
 % end
-% for x = numFrames
+% for x =numFrames
 %     filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
 %     delete(filename);
 %     imwrite(data2(:,:,:,x),strcat('cam_2/',filename));
 % end
-% for x = numFrames %bh5 m
+% for x =numFrames %bh5 m
 %     filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
 %     delete(filename);
 %     imwrite(data3(:,:,:,x),strcat('cam_3/',filename));
@@ -168,21 +184,21 @@ imaqmontage(data3)
 
 %% save the frames for flat and dark field calibration 
 % flat, dark, expt ones
-% for x = 1:numFrames
-%     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
-% end
-% for x = 1:numFrames
-%     filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
-% end
-% for x = 1:numFrames %bh5 m
-%     filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
-% end
+for x = 1:numFrames
+    filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
+end
+for x = 1:numFrames
+    filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
+end
+for x = 1:numFrames %bh5 m
+    filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
+end
 
 %% save the frames for Analyzer Matrix calibration
 % disp('Acq done, saving frames...')
@@ -220,21 +236,21 @@ imaqmontage(data3)
 % end
 
 %% expt
-for x = 1:numFrames
-    filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
-end
-for x = 1:numFrames
-    filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
-end
-for x = 1:numFrames %bh5 m
-    filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
-end
+% for x = 1:numFrames
+%     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
+% end
+% for x = 1:numFrames
+%     filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
+% end
+% for x = 1:numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
+% end
 
 %%
 % if acquiring~=1

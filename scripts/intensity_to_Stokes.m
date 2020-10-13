@@ -5,7 +5,6 @@
 % being the first Stokes parameter S0, second being S1 and third being S3
 %% variable Analyzer Matrix
 load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\analyzerMatrix.mat')
-% load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\analyzerMatrix_single_for_all.mat')
 load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\final_map.mat')
 final_map = new_map;
 
