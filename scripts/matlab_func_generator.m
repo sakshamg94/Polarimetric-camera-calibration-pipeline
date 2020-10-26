@@ -8,7 +8,7 @@ close all
 % num Frames from how many you need
 % # Last image for camera geometric calibration has to be stable and 
 % # static held pattern for all the 3 cameras
-numFrames = 2; %more than 1k does not work with the exposure, has be >=2
+numFrames = 32; %more than 1k does not work with the exposure, has be >=2
 exposure = 6000;
 acquiring = 1;
 %% Create a videoinput with the desired video format and get access to the
@@ -166,39 +166,39 @@ imaqmontage(data3)
 
 %% save the frames for Geometric calibration (checkerboard)
 % disp('Acq done, saving frames...')
-% for x = numFrames
-%     filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data1(:,:,:,x),strcat('cam_1/',filename));
-% end
-% for x =numFrames
-%     filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data2(:,:,:,x),strcat('cam_2/',filename));
-% end
-% for x =numFrames %bh5 m
-%     filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
-%     delete(filename);
-%     imwrite(data3(:,:,:,x),strcat('cam_3/',filename));
-% end
+for x = numFrames
+    filename=strcat('Cam_1_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data1(:,:,:,x),strcat('cam_1/',filename));
+end
+for x =numFrames
+    filename=strcat('Cam_2_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data2(:,:,:,x),strcat('cam_2/',filename));
+end
+for x =numFrames %bh5 m
+    filename=strcat('Cam_3_Image',int2str(x-1),'.jpg'); %  OR JPEG AS  YOU LIKE
+    delete(filename);
+    imwrite(data3(:,:,:,x),strcat('cam_3/',filename));
+end
 
 %% save the frames for flat and dark field calibration 
 % flat, dark, expt ones
-for x = 1:numFrames
-    filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
-end
-for x = 1:numFrames
-    filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
-end
-for x = 1:numFrames %bh5 m
-    filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
-    delete(filename);
-    imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
-end
+% for x = 1:numFrames
+%     filename=strcat('Cam_1_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data1(:,:,1,x),strcat('cam_1_expt/',filename));
+% end
+% for x = 1:numFrames
+%     filename=strcat('Cam_2_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data2(:,:,1,x),strcat('cam_2_expt/',filename));
+% end
+% for x = 1:numFrames %bh5 m
+%     filename=strcat('Cam_3_Image',int2str(x),'.png'); %  OR JPEG AS  YOU LIKE
+%     delete(filename);
+%     imwrite(data3(:,:,1,x),strcat('cam_3_expt/',filename));
+% end
 
 %% save the frames for Analyzer Matrix calibration
 % disp('Acq done, saving frames...')

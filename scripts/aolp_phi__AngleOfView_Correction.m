@@ -1,11 +1,19 @@
 %% Solve for AOLP
-% load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\final_S_map.mat')
+load('C:\Users\tracy\Downloads\saksham_polarimetric_cam\final_S_map.mat')
+cols = size(final_S_map,2);
+gamma = 2*ones(1, cols);
+cx = cols/2;%cameraParams.PrincipalPoint(1);
+fx = cameraParams.FocalLength(1);
 aolp = zeros(size(final_S_map,1),size(final_S_map,2),size(final_S_map,4));
 for i = 1:1:size(final_S_map,1)
     for j= 1:1:size(final_S_map,2)
+%         gamma(j) = atan(abs((cx-j))/fx)*180/pi; 
         for x =1:1:size(final_S_map,4)
+            S2 = final_S_map(i,j,3,x);
+            S1 = final_S_map(i,j,2,x);
             aolp(i,j,x) = ...
-                0.5*atan(final_S_map(i,j,3,x)/final_S_map(i,j,2,x));
+                0.5*atan((S2*cosd(2*gamma(j)) - S1*sind(2*gamma(j)))...
+                /(S1*cosd(2*gamma(j)) + S2*sind(2*gamma(j))));
         end
     end
 end

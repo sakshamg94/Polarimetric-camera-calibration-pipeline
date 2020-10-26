@@ -69,3 +69,6 @@ imshow(new_map(:,:,2)); subplot(1,3,3); imshow(new_map(:,:,3));
 %% camera calibration
 figure
 showExtrinsics(cameraParams);
+%% analyzer matrix check Aben1997 has a different theoretical form of 
+% analyser matrix than Bauer
+a= reshape(mean(analyzerMatrices, [1,2]), [3,3]);

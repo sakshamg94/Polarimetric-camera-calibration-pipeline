@@ -54,6 +54,12 @@ title('DOLP')
 figure;
 imshow(uint8(theta)); hold on;
 title('Angle of incidence (degrees)')
+figure(46)
+Xd = 1:1:size(dolp(:,:,1),2);
+Yd = 1:1:size(dolp(:,:,1),1);
+surf(Xd, Yd, imgaussfilt(uint8(theta), 2))
+title('Angle of incidence (degrees)')
+
 %% save
 save('C:\Users\tracy\Downloads\saksham_polarimetric_cam\dolp_theta.mat','dolp','theta', '-v7.3')
 %% plot

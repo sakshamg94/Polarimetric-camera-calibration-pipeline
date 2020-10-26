@@ -5,8 +5,8 @@
 % Crop images to contain overlapping region
 % Save the resulting mat-files -- keep double format
 %%
-src = '_Analyzer_Matrix'; %'_Analyzer_Matrix'; % or '_expt' % extension of teh source folder 
-srcNumIm = 18; % 18 for analyzer
+src = '_expt'; %'_Analyzer_Matrix'; % or '_expt' % extension of teh source folder 
+srcNumIm = 1; % 18 for analyzer
 
 if strcmp(src,'_Analyzer_Matrix')
     savefname = 'final_map_Analyzer_Images.mat';
