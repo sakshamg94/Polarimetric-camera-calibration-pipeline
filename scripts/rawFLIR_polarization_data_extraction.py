@@ -181,7 +181,7 @@ def normalise_AOLP(im_AOLP):
 def saveplot(location, file_prefix, suffix):
     plt.savefig(os.path.join(location, file_prefix+"_"+"{}.png".format(suffix)))
 
-def makeBokehColorbarImage(data, lower, higher, r=1024, c=1224, palette = "Viridis10", title=""):
+def makeBokehColorbarImage(data, lower, higher, r=1024, c=1224, palette = "Viridis256", title=""):
     # bokeh plot object
     p1 = figure(tooltips = [('x', '$x'), ('y', '$y'), ('value', '@image')], title = title) #'Head-on θ'
     p1.x_range.range_padding = p1.y_range.range_padding = 0
