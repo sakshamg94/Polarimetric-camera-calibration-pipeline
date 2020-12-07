@@ -12,6 +12,49 @@ from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import gridplot
 from bokeh.models import ColorBar, LinearColorMapper, BasicTicker
 
+
+def theta_phi(filename, file_location, num_images):
+    for i in range(num_images):
+        image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
+        print("image_data shape is : ", image_data.shape)
+    #     print(not (image_data[:,:,0]==image_data[:,:,2]).all())
+        im90, im45, im135, im0 = quad_algo(image_data)
+        print("im90 shape is : ", im90.shape)
+
+        write_quad_image(im90, 90, file_location, filename[:-5])
+        write_quad_image(im90, 45, file_location, filename[:-5])
+        write_quad_image(im90, 135, file_location, filename[:-5])
+        write_quad_image(im90, 0, file_location, filename[:-5])
+
+        # Get Stokes vector first 3 components from 4 quad images
+        im_stokes0, im_stokes1, im_stokes2 = calculate_Stokes_Params(im90, im45, im135, im0)
+
+        # Get DOLP from Stokes measurements
+        im_DOLP = calculate_DOLP(im_stokes0, im_stokes1, im_stokes2)
+
+        # Get theta (Angle of incidence) from DOLP
+        im_theta, DOLP_errors =  DOLP2Theta(1, 1.47, im_DOLP)
+        print(np.array(DOLP_errors).any())
+
+        # Create a heatmap from the greyscale image
+        im_DOLP_normalized = normalise_DOLP(im_DOLP)    
+        im_DOLP_heatmap = heatmap_from_greyscale(im_DOLP_normalized)
+        write_image("DOLP_heatmap", i, im_DOLP_heatmap, file_location, filename[:-5])
+
+        # Get AOLP from Stokes measurements
+        im_AOLP = calculate_AOLP(im_stokes1, im_stokes2)
+
+        # Get angle of plane of polarization from AOLP
+        im_phi = (im_AOLP + np.pi/2)*180/np.pi;
+
+        # Create a heatmap from the greyscale image
+        im_AOLP_normalized = normalise_AOLP(im_AOLP)    
+        im_AOLP_heatmap = heatmap_from_greyscale(im_AOLP_normalized)
+        write_image("AOLP_heatmap", i, im_AOLP_heatmap, file_location, filename[:-5])    
+        
+        return im_theta, im_phi
+
+
 def quad_algo(image_data):
     '''
     Extract image data from each of the 4 polarized quadrants
@@ -46,16 +89,21 @@ def write_glare_reduced_image(im90, im45, im135, im0, location):
     
     return glare_reduced_image 
 
-def calculate_Stokes_Params(im90, im45, im135, im0):
+def calculate_Stokes_Params(im90, im45, im135, im0, correction_angle = 0):
     '''
     Calculate Stokes parameters
+    correction_angle (degrees): non-zero angle to convert from lab frame to meridional frame measurements
     '''
     tic = time.time()
 
-    im_stokes0 = im0.astype(np.float) + im90.astype(np.float)
-    im_stokes1 = im0.astype(np.float) - im90.astype(np.float)
-    im_stokes2 = im45.astype(np.float) - im135.astype(np.float)
-
+    im_stokes0 = im0.astype(np.float) + im90.astype(np.float) #lab_frame measurement
+    im_stokes1 = im0.astype(np.float) - im90.astype(np.float) #lab_frame measurement
+    im_stokes2 = im45.astype(np.float) - im135.astype(np.float)#lab_frame measurement
+    
+    if correction_angle!=0: # convert to meridional frame
+        im_stokes2 = -im_stokes1*np.sin(2*np.deg2rad(correction_angle))+im_stokes2*np.cos(2*np.deg2rad(correction_angle))
+        im_stokes1 = im_stokes1*np.cos(2*np.deg2rad(correction_angle))+ im_stokes2*np.sin(2*np.deg2rad(correction_angle))
+    
     toc = time.time()
     print("Stokes time: ", toc - tic, "s")
     
