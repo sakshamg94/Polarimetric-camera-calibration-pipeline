@@ -11,9 +11,9 @@ from scipy import interpolate
 from bokeh.plotting import figure, output_file, show
 from bokeh.layouts import gridplot
 from bokeh.models import ColorBar, LinearColorMapper, BasicTicker
+import scipy.io
 
-
-def theta_phi(filename, file_location, num_images):
+def theta_phi(filename, file_location, num_images, correction_angle=0):
     for i in range(num_images):
         image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
         print("image_data shape is : ", image_data.shape)
@@ -27,19 +27,23 @@ def theta_phi(filename, file_location, num_images):
         write_quad_image(im90, 0, file_location, filename[:-5])
 
         # Get Stokes vector first 3 components from 4 quad images
-        im_stokes0, im_stokes1, im_stokes2 = calculate_Stokes_Params(im90, im45, im135, im0)
-
+        # S is floating point array -- cannot be written as a tiff or png "image"
+        im_stokes0, im_stokes1, im_stokes2 = calculate_Stokes_Params(im90, im45, im135, im0, correction_angle)
+        print("im_stokes0 shape is : ", im_stokes0.shape) 
+        
         # Get DOLP from Stokes measurements
         im_DOLP = calculate_DOLP(im_stokes0, im_stokes1, im_stokes2)
-
+        print("im_DOLP shape is : ", im_DOLP.shape)
+        
         # Get theta (Angle of incidence) from DOLP
         im_theta, DOLP_errors =  DOLP2Theta(1, 1.47, im_DOLP)
         print(np.array(DOLP_errors).any())
 
         # Create a heatmap from the greyscale image
-        im_DOLP_normalized = normalise_DOLP(im_DOLP)    
-        im_DOLP_heatmap = heatmap_from_greyscale(im_DOLP_normalized)
-        write_image("DOLP_heatmap", i, im_DOLP_heatmap, file_location, filename[:-5])
+        # floating point array -- cannot be written as a tiff or png "image", write a matlab array instead
+#         im_DOLP_normalized = normalise_DOLP(im_DOLP)    
+#         im_DOLP_heatmap = heatmap_from_greyscale(im_DOLP_normalized)
+        write_float_image("DOLP", i, im_DOLP, file_location, filename[:-5])
 
         # Get AOLP from Stokes measurements
         im_AOLP = calculate_AOLP(im_stokes1, im_stokes2)
@@ -48,9 +52,10 @@ def theta_phi(filename, file_location, num_images):
         im_phi = (im_AOLP + np.pi/2)*180/np.pi;
 
         # Create a heatmap from the greyscale image
-        im_AOLP_normalized = normalise_AOLP(im_AOLP)    
-        im_AOLP_heatmap = heatmap_from_greyscale(im_AOLP_normalized)
-        write_image("AOLP_heatmap", i, im_AOLP_heatmap, file_location, filename[:-5])    
+        # floating point array -- cannot be written as a tiff or png "image", write a matlab array instead
+#         im_AOLP_normalized = normalise_AOLP(im_AOLP)    
+#         im_AOLP_heatmap = heatmap_from_greyscale(im_AOLP_normalized)
+        write_float_image("AOLP", i, im_AOLP, file_location, filename[:-5])    
         
         return im_theta, im_phi
 
@@ -191,8 +196,9 @@ def DOLP2Theta(ni, nt, im_DOLP):
     print("Time for DOLP2Theta conversion is : ", toc-tic, "seconds")
     return im_theta, DOLP_errors
 
-def write_image(im_prefix, im_number, image, location, file_prefix):
-    cv2.imwrite(os.path.join(location, file_prefix+"_"+"{}-{}.tiff".format(im_prefix, im_number)), image)
+def write_float_image(im_prefix, im_number, image, location, file_prefix):
+    fname = os.path.join(location, file_prefix+"_"+"{}-{}.mat".format(im_prefix, im_number))
+    scipy.io.savemat(fname, {str(im_prefix): image})
 
 def heatmap_from_greyscale(grey_image):
     '''
