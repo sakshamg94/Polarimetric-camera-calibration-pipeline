@@ -13,7 +13,8 @@ from bokeh.layouts import gridplot
 from bokeh.models import ColorBar, LinearColorMapper, BasicTicker
 import scipy.io
 
-def theta_phi(filename, file_location, num_images, correction_angle=0):
+def theta_phi(filename, file_location, num_images, material, correction_angle=0):
+    print('Processing data for material : {}'.format(material.upper()))
     for i in range(num_images):
         image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
         print("image_data shape is : ", image_data.shape)
@@ -35,8 +36,18 @@ def theta_phi(filename, file_location, num_images, correction_angle=0):
         im_DOLP = calculate_DOLP(im_stokes0, im_stokes1, im_stokes2)
         print("im_DOLP shape is : ", im_DOLP.shape)
         
+        # Get the material refractive index for AOI or DOLP calculations
+        if material.lower() == 'borosilicate_glass':
+            nt = 1.47
+        elif material.lower() == 'ferrofluid_emg905':
+            nt = 1.58
+        elif material.lower() == 'water':
+            nt = 1.33
+        else:
+            raise Exception('Check the material type entered: borosilicate_glass or ferrofluid_EMG905 or water')
+        
         # Get theta (Angle of incidence) from DOLP
-        im_theta, DOLP_errors =  DOLP2Theta(1, 1.47, im_DOLP)
+        im_theta, DOLP_errors =  DOLP2Theta(1, nt, im_DOLP)
         print(np.array(DOLP_errors).any())
 
         # Create a heatmap from the greyscale image
@@ -147,13 +158,16 @@ def DOLP_curve(ni, nt):
     from incident medium with refractive index ni to the transmission medium
     of refractive index nt
     '''
-    #nt: 1.47 borosilicate glass; %1.58; %(ferrofluid emg 905);%1.333; 57.68 for EMG 905
+    #nt: 1.47 borosilicate glass; %1.58 ferrofluid emg 905);%1.333 water; 57.68
     
     th_Brewster = np.arctan2(nt,ni)
     
     thI = np.linspace(0, th_Brewster, 200).astype(
         np.float
     )
+#     thI = np.linspace(th_Brewster, np.pi/2,200).astype(
+#         np.float
+#     )
     thT = np.arcsin(ni*np.sin(thI)/nt).astype(
         np.float
     )
