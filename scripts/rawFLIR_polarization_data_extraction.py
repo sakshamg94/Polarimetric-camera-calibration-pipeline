@@ -13,20 +13,58 @@ from bokeh.layouts import gridplot
 from bokeh.models import ColorBar, LinearColorMapper, BasicTicker
 import scipy.io
 
-def theta_phi(filename, file_location, num_images, material, correction_angle=0):
+def mean_fields(file_location):
+    
+    filenames = os.listdir(file_location)
+    
+    for i, filename in enumerate(filenames):
+        image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
+        im90, im45, im135, im0 = quad_algo(image_data)
+        if i==0:
+            cumul90 = im90
+            cumul45 = im45
+            cumul135 = im135
+            cumul0 = im0
+        else:
+            cumul90 += im90
+            cumul45 += im45
+            cumul135 += im135
+            cumul0 += im0
+    
+    return cumul90/(i+1), cumul45/(i+1), cumul135/(i+1), cumul0/(i+1)
+
+def flat_field_params(dark_files_location, flat_files_location):
+    D90, D45, D135, D0 = mean_fields(dark_files_location)
+    F90, F45, F135, F0 = mean_fields(flat_files_location)
+    m90, m45, m135, m0 = np.mean(F90-D90), np.mean(F45-D45), np.mean(F135-D135), np.mean(F0-D0)
+    
+    return D90, D45, D135, D0, F90, F45, F135, F0, m90, m45, m135, m0
+
+
+def theta_phi(filename, file_location, num_images, material, dark_files_location, flat_files_location, 
+              flat_field_correct = 0, correction_angle=0):
     print('Processing data for material : {}'.format(material.upper()))
+    
+    D90, D45, D135, D0, \
+    F90, F45, F135, F0, \
+    m90, m45, m135, m0 =  flat_field_params(dark_files_location, flat_files_location)
+    
+    F90D90, F45D45, F135D135, F0D0 = F90-D90, F45-D45, F135-D135, F0-D0
+        
     for i in range(num_images):
         image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
         print("image_data shape is : ", image_data.shape)
-    #     print(not (image_data[:,:,0]==image_data[:,:,2]).all())
+        #     print(not (image_data[:,:,0]==image_data[:,:,2]).all())
         im90, im45, im135, im0 = quad_algo(image_data)
         print("im90 shape is : ", im90.shape)
-
-        write_quad_image(im90, 90, file_location, filename[:-5])
-        write_quad_image(im90, 45, file_location, filename[:-5])
-        write_quad_image(im90, 135, file_location, filename[:-5])
-        write_quad_image(im90, 0, file_location, filename[:-5])
-
+        
+        #   write_quad_image(im90, 90, file_location, filename[:-5])
+        if flat_field_correct != 0:
+            im90 = (im90 - D90)/F90D90*m90
+            im45 = (im45 - D45)/F45D45*m45
+            im135 = (im135 - D135)/F135D135*m135
+            im0 = (im0 - D0)/F0D0*m0
+        
         # Get Stokes vector first 3 components from 4 quad images
         # S is floating point array -- cannot be written as a tiff or png "image"
         im_stokes0, im_stokes1, im_stokes2 = calculate_Stokes_Params(im90, im45, im135, im0, correction_angle)
