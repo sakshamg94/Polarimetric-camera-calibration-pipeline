@@ -18,7 +18,7 @@ def mean_fields(file_location):
     filenames = os.listdir(file_location)
     
     for i, filename in enumerate(filenames):
-        image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
+        image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0].astype(np.float)
         im90, im45, im135, im0 = quad_algo(image_data)
         if i==0:
             cumul90 = im90
@@ -34,6 +34,11 @@ def mean_fields(file_location):
     return cumul90/(i+1), cumul45/(i+1), cumul135/(i+1), cumul0/(i+1)
 
 def flat_field_params(dark_files_location, flat_files_location):
+    '''flat field correction is being done to correct for the optical vignetting observed in the images 
+    i.e. darker edges 
+    This vignetting (see wikipedia) is due to the lens not the chip itself. In multielement lens, shadows
+    of the front ones fall on the edges of the rear ones. It can also be reduced by using a smaller aperture
+    '''
     D90, D45, D135, D0 = mean_fields(dark_files_location)
     F90, F45, F135, F0 = mean_fields(flat_files_location)
     m90, m45, m135, m0 = np.mean(F90-D90), np.mean(F45-D45), np.mean(F135-D135), np.mean(F0-D0)
@@ -42,7 +47,7 @@ def flat_field_params(dark_files_location, flat_files_location):
 
 
 def theta_phi(filename, file_location, num_images, material, dark_files_location, flat_files_location, 
-              flat_field_correct = 0, correction_angle=0):
+              gaussian_smoothing_sigma=0, flat_field_correct = 0, correction_angle=0):
     print('Processing data for material : {}'.format(material.upper()))
     
     D90, D45, D135, D0, \
@@ -64,6 +69,16 @@ def theta_phi(filename, file_location, num_images, material, dark_files_location
             im45 = (im45 - D45)/F45D45*m45
             im135 = (im135 - D135)/F135D135*m135
             im0 = (im0 - D0)/F0D0*m0
+        
+        #gaussian filtering
+        # 3.64px/mm or 0.27mm/px ; 2.7mm capillary length scale => 3.64*2.7 = 9.83px (~10px); 5px on each side to get x-y length scale of ~10px. 5px = 2sigma =>sigma = 2.5 both in x and y. Don't worry about the diagonal -- it has the least weight anyway in the convolution filter. kernel size is the coefficient of the gaussian [here (see examplke 40-1)](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-40-incremental-computation-gaussian)
+
+        # See here for how to use the gasussian kernel: https://www.tutorialkart.com/opencv/python/opencv-python-gaussian-image-smoothing/
+        if gaussian_smoothing_sigma!=0: # shoudl be 2.5 for water
+            im0 = cv2.GaussianBlur(im0,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
+            im90 = cv2.GaussianBlur(im90,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
+            im45 = cv2.GaussianBlur(im45,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
+            im135 = cv2.GaussianBlur(im135,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
         
         # Get Stokes vector first 3 components from 4 quad images
         # S is floating point array -- cannot be written as a tiff or png "image"
@@ -121,7 +136,7 @@ def quad_algo(image_data):
     im0 = image_data[1::2, 1::2]
 
     toc = time.time()
-    print("Quad algorithm time ", toc - tic, "s")
+    # print("Quad algorithm time ", toc - tic, "s")
     
     return im90, im45, im135, im0
 
