@@ -42,19 +42,16 @@ def flat_field_params(dark_files_location, flat_files_location):
     D90, D45, D135, D0 = mean_fields(dark_files_location)
     F90, F45, F135, F0 = mean_fields(flat_files_location)
     m90, m45, m135, m0 = np.mean(F90-D90), np.mean(F45-D45), np.mean(F135-D135), np.mean(F0-D0)
-    
-    return D90, D45, D135, D0, F90, F45, F135, F0, m90, m45, m135, m0
+    F90D90, F45D45, F135D135, F0D0 = F90-D90, F45-D45, F135-D135, F0-D0
+    return F90D90, F45D45, F135D135, F0D0,D90, D45, D135, D0, m90, m45, m135, m0
 
 
-def theta_phi(filename, file_location, num_images, material, dark_files_location, flat_files_location, 
-              gaussian_smoothing_sigma=0, flat_field_correct = 0, correction_angle=0):
+def theta_phi(filename, file_location, num_images, material, 
+                  gaussian_smoothing_sigma=0, correction_angle=0, \
+                  flat_field_correct = 0, flat_field_correction_params = []):
     print('Processing data for material : {}'.format(material.upper()))
     
-    D90, D45, D135, D0, \
-    F90, F45, F135, F0, \
-    m90, m45, m135, m0 =  flat_field_params(dark_files_location, flat_files_location)
-    
-    F90D90, F45D45, F135D135, F0D0 = F90-D90, F45-D45, F135-D135, F0-D0
+    F90D90, F45D45, F135D135, F0D0,D90, D45, D135, D0, m90, m45, m135, m0 = flat_field_correction_params
         
     for i in range(num_images):
         image_data = cv2.imread(os.path.join(file_location, filename).format(i))[:,:,0]
@@ -107,7 +104,7 @@ def theta_phi(filename, file_location, num_images, material, dark_files_location
         # floating point array -- cannot be written as a tiff or png "image", write a matlab array instead
 #         im_DOLP_normalized = normalise_DOLP(im_DOLP)    
 #         im_DOLP_heatmap = heatmap_from_greyscale(im_DOLP_normalized)
-        write_float_image("DOLP", i, im_DOLP, file_location, filename[:-5])
+#         write_float_image("DOLP", i, im_DOLP, file_location, filename[:-5])
 
         # Get AOLP from Stokes measurements
         im_AOLP = calculate_AOLP(im_stokes1, im_stokes2)
@@ -119,7 +116,7 @@ def theta_phi(filename, file_location, num_images, material, dark_files_location
         # floating point array -- cannot be written as a tiff or png "image", write a matlab array instead
 #         im_AOLP_normalized = normalise_AOLP(im_AOLP)    
 #         im_AOLP_heatmap = heatmap_from_greyscale(im_AOLP_normalized)
-        write_float_image("AOLP", i, im_AOLP, file_location, filename[:-5])    
+#         write_float_image("AOLP", i, im_AOLP, file_location, filename[:-5])    
         
         return im_theta, im_phi
 
@@ -230,14 +227,14 @@ def DOLP_curve(ni, nt):
 
     DOLP = np.abs((alpha - eta)/(alpha + eta))
     
-    fig = plt.figure(figsize=(5, 5),  facecolor='w', edgecolor='k')
-    plt.plot(thI*180/np.pi, np.abs(DOLP),color='Indigo', linestyle='--', linewidth=3)
-    plt.axvline(x=th_Brewster*180/np.pi, linestyle='-', linewidth=3)
-    plt.xlabel("Incidence angle ($\\theta_i$) [deg]", fontsize=16)
-    plt.ylabel("DOLP($\\theta_i$)", fontsize = 16)
-    plt.xlim(0,90)
-    plt.grid()
-    plt.show()
+#     fig = plt.figure(figsize=(5, 5),  facecolor='w', edgecolor='k')
+#     plt.plot(thI*180/np.pi, np.abs(DOLP),color='Indigo', linestyle='--', linewidth=3)
+#     plt.axvline(x=th_Brewster*180/np.pi, linestyle='-', linewidth=3)
+#     plt.xlabel("Incidence angle ($\\theta_i$) [deg]", fontsize=16)
+#     plt.ylabel("DOLP($\\theta_i$)", fontsize = 16)
+#     plt.xlim(0,90)
+#     plt.grid()
+#     plt.show()
     
     return DOLP, thI
 
@@ -312,6 +309,22 @@ def makeBokehColorbarImage(data, lower, higher, r=1024, c=1224, palette = "Virid
     # must give a vector of image data for image parameter 
     cmapper = LinearColorMapper(palette = palette, low = lower, high =  higher)
     p1.image(image = [data[::-1,:]], x=0, y=0, dw=c, dh=r, color_mapper = cmapper,  level = "image") # Spectral11
+    p1.grid.grid_line_width = 0.5
+    color_bar = ColorBar(color_mapper = cmapper, ticker = BasicTicker(), location=(0,0))
+    p1.add_layout(color_bar, 'right')
+    # show(p1)
+    return p1
+
+def makeBokehRawImage(data, lower, higher, r=1024*2, c=1224*2, palette = "Viridis256", title=""):
+    # bokeh plot object
+    p1 = figure(tooltips = [('x', '$x'), ('y', '$y'), ('value', '@image')], title = title) #'Head-on θ'
+    p1.x_range.range_padding = p1.y_range.range_padding = 0
+    # p1.y_range.flipped = True
+    # ****note that the y axis labels are opposite in order fromn the numpy row labelling 
+
+    # must give a vector of image data for image parameter 
+    cmapper = LinearColorMapper(palette = palette, low = lower, high =  higher)
+    p1.image(image = [cv2.flip(data,0)], x=0, y=0, dw=c, dh=r, color_mapper = cmapper,  level = "image") 
     p1.grid.grid_line_width = 0.5
     color_bar = ColorBar(color_mapper = cmapper, ticker = BasicTicker(), location=(0,0))
     p1.add_layout(color_bar, 'right')
