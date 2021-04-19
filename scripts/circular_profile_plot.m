@@ -3,7 +3,7 @@ close all
 figure(1);
 hold on
 removeNan = 0;
-displayQuantity_str = '$$\left <\log^2\left |  FFT\left(\tan^{-1}\frac{S_{spanwise}}{S_{streamwise}}\right)\right |\right >$$';
+displayQuantity_str = 'Integral normalized $$\left <\log^2\left |  FFT\left(\tan^{-1}\frac{S_{spanwise}}{S_{streamwise}}\right)\right |\right >$$';
 %% SLOW DEEP
 load('ZOOMED_mean_2DFFT_slopeAzi_dunes_slowFlow_DeepH_test2.mat');
 I = slopeMag_hat_mag_mean;
@@ -13,6 +13,11 @@ lim = 100;
 delta = 3;
 I_zoom = I(nx/2 - lim/2:nx/2 + lim/2+ delta, ny/2 - lim/2:ny/2 + lim/2 +delta);
 [mx, my] = size(I_zoom); 
+kx = -mx/2+0.5:1:mx/2-0.5;
+ky = -my/2+0.5:1:my/2-0.5;
+integral = trapz(ky,trapz(kx,I_zoom,2));
+I_zoom = I_zoom/integral;
+
 center = [mx/2 , my/2];% center of the circle;
 xc = center(1);
 yc = center(2);
@@ -38,7 +43,7 @@ colorbar;
 r = [50, 40, 30, 20, 10, 5, 1, 0.5];
 colors = num2cell(hsv(length(r)),2);%{[0.5,0.5,0], 'black', 'green', 'magenta', 'blue', 'red', 'cyan'};
 flowCase_str = [BEDFORM,' ', FLOW_SPEED,' ',SUBMERGENCE];
-title_string = [flowCase_str, ' ', displayQuantity_str];
+title_string = {flowCase_str,  displayQuantity_str};
 % In polar coordinates
 angles = 0:1:360 ; % location in degrees reckoned from x axis -- clockwise
 % polar_coord = [r(1)*ones(1, length(angles)); angles*pi/180] ;
@@ -51,7 +56,7 @@ for k =1:length(r)
     Yq(k,:) = yc(1)+r(k)*sind(angles) ;
     plot(Xq(k,:),Yq(k,:),'.','Color',colors{k}) ;
 end
-title(title_string, 'interpreter','latex', 'fontsize',14)
+title(title_string, 'interpreter','latex', 'fontsize',11)
 hold off
 
 
@@ -67,7 +72,7 @@ for k  = 1:length(r)
     circ_vals(k,:) = interp2(X,Y,I_zoom(:,:),Xq(k,:),Yq(k,:)) ; 
     plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1.1);
 end
-ylabel(title_string, 'interpreter','latex', 'fontsize',14)
+ylabel(title_string, 'interpreter','latex', 'fontsize',11)
 xlabel('Image azimuth in degrees (reckoned from x axis clockwise)')
 %% FAST SHALLOW
 load('ZOOMED_mean_2DFFT_slopeAzi_dunes_fastFlow_ShallowH_test2.mat');
@@ -85,6 +90,10 @@ if removeNan==1
     I_zoom(xc,:) = nan;
     I_zoom(:,yc) = nan;
 end
+kx = -mx/2+0.5:1:mx/2-0.5;
+ky = -my/2+0.5:1:my/2-0.5;
+integral = trapz(ky,trapz(kx,I_zoom,2));
+I_zoom = I_zoom/integral;
 
 % disaplay the Zoomed in image
 subplot(2,2,2);
@@ -103,7 +112,7 @@ colorbar;
 r = [50, 40, 30, 20, 10, 5, 1, 0.5];
 colors = num2cell(hsv(length(r)),2);%{[0.5,0.5,0], 'black', 'green', 'magenta', 'blue', 'red', 'cyan'};
 flowCase_str = [BEDFORM,' ', FLOW_SPEED,' ',SUBMERGENCE];
-title_string = [flowCase_str, ' ', displayQuantity_str];
+title_string = {flowCase_str, displayQuantity_str};
 
 % In polar coordinates
 angles = 0:1:360 ; % location in degrees reckoned from x axis -- clockwise
@@ -117,7 +126,7 @@ for k =1:length(r)
     Yq(k,:) = yc(1)+r(k)*sind(angles) ;
     plot(Xq(k,:),Yq(k,:),'.','color',colors{k}) ;
 end
-title(title_string, 'interpreter','latex', 'fontsize',14)
+title(title_string, 'interpreter','latex', 'fontsize',11)
 hold off
 
 
@@ -131,7 +140,7 @@ hold on
 
 for k  = 1:length(r)
     circ_vals(k,:) = interp2(X,Y,I_zoom(:,:),Xq(k,:),Yq(k,:)) ; 
-    plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1.1);
+    plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1);
 end
-ylabel(title_string, 'interpreter','latex', 'fontsize',14)
+ylabel(title_string, 'interpreter','latex', 'fontsize',11)
 xlabel('Image azimuth in degrees (reckoned from x axis clockwise)')

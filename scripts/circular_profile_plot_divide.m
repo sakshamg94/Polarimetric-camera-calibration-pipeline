@@ -5,7 +5,7 @@ hold on
 removeNan = 0;
 displayQuantity_str = '$$\left <\log^2\left |  FFT\left(\tan^{-1}\frac{S_{spanwise}}{S_{streamwise}}\right)\right |\right >$$';
 %% SLOW DEEP
-load('ZOOMED_mean_2DFFT_slopeAzi_dunes_slowFlow_DeepH_test2.mat');
+load('ZOOMED_mean_2DFFT_slopeAzi_rocks_slowFlow_DeepH_test2.mat');
 I = slopeMag_hat_mag_mean;
 [nx,ny,d] = size(I) ; % x is the cols, y: rows
 % view the zoomed in image
@@ -20,10 +20,15 @@ if removeNan==1
     I_zoom_ref(xc,:) = nan;
     I_zoom_ref(:,yc) = nan;
 end
-flowCase_str = [BEDFORM];
-title_string = [flowCase_str, ' ', displayQuantity_str];
+kx = -mx/2+0.5:1:mx/2-0.5;
+ky = -my/2+0.5:1:my/2-0.5;
+integral = trapz(ky,trapz(kx,I_zoom_ref,2));
+I_zoom_ref = I_zoom_ref/integral;
+
+flowCase_str = ['Normalized division', ' ', BEDFORM];
+title_string = {flowCase_str,  displayQuantity_str};
 %% FAST SHALLOW
-load('ZOOMED_mean_2DFFT_slopeAzi_dunes_fastFlow_ShallowH_test2.mat');
+load('ZOOMED_mean_2DFFT_slopeAzi_rocks_fastFlow_ShallowH_test2.mat');
 I = slopeMag_hat_mag_mean;
 [nx,ny,d] = size(I) ; % x is the cols, y: rows
 % view the zoomed in image
@@ -38,6 +43,11 @@ if removeNan==1
     I_zoom(xc,:) = nan;
     I_zoom(:,yc) = nan;
 end
+kx = -mx/2+0.5:1:mx/2-0.5;
+ky = -my/2+0.5:1:my/2-0.5;
+integral = trapz(ky,trapz(kx,I_zoom,2));
+I_zoom = I_zoom/integral;
+
 I_zoom  = I_zoom./ I_zoom_ref;
 
 % disaplay the Zoomed in image
@@ -69,7 +79,7 @@ for k =1:length(r)
     Yq(k,:) = yc(1)+r(k)*sind(angles) ;
     plot(Xq(k,:),Yq(k,:),'.','color',colors{k}) ;
 end
-title(title_string, 'interpreter','latex', 'fontsize',14)
+title(title_string, 'interpreter','latex', 'fontsize',11)
 hold off
 
 %Do interpolation to get pixels 
@@ -82,7 +92,7 @@ hold on
 
 for k  = 1:length(r)
     circ_vals(k,:) = interp2(X,Y,I_zoom(:,:),Xq(k,:),Yq(k,:)) ; 
-    plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1.1);
+    plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1);
 end
-ylabel(title_string, 'interpreter','latex', 'fontsize',14)
+ylabel(title_string, 'interpreter','latex', 'fontsize',11)
 xlabel('Image azimuth in degrees (reckoned from x axis clockwise)')
