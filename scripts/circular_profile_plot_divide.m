@@ -2,9 +2,11 @@
 close all
 figure(1);
 hold on
+removeNan = 0;
+displayQuantity_str = '$$\left <\log^2\left |  FFT\left(\tan^{-1}\frac{S_{spanwise}}{S_{streamwise}}\right)\right |\right >$$';
 %% SLOW DEEP
-load('ZOOMED_mean_2DFFT_slopeAzi_rocks_slowFlow_DeepH_test2.mat');
-I = log(abs(slopeAzi_hat_mean)).^2;
+load('ZOOMED_mean_2DFFT_slopeAzi_dunes_slowFlow_DeepH_test2.mat');
+I = slopeMag_hat_mag_mean;
 [nx,ny,d] = size(I) ; % x is the cols, y: rows
 % view the zoomed in image
 lim = 100;
@@ -14,11 +16,15 @@ I_zoom_ref = I(nx/2 - lim/2:nx/2 + lim/2+ delta, ny/2 - lim/2:ny/2 + lim/2 +delt
 center = [mx/2 , my/2];% center of the circle;
 xc = center(1);
 yc = center(2);
-% I_zoom_ref(xc,:) = nan;
-% I_zoom_ref(:,yc) = nan;
+if removeNan==1
+    I_zoom_ref(xc,:) = nan;
+    I_zoom_ref(:,yc) = nan;
+end
+flowCase_str = [BEDFORM];
+title_string = [flowCase_str, ' ', displayQuantity_str];
 %% FAST SHALLOW
-load('ZOOMED_mean_2DFFT_slopeAzi_rocks_fastFlow_ShallowH_test2.mat');
-I = log(abs(slopeAzi_hat_mean)).^2;
+load('ZOOMED_mean_2DFFT_slopeAzi_dunes_fastFlow_ShallowH_test2.mat');
+I = slopeMag_hat_mag_mean;
 [nx,ny,d] = size(I) ; % x is the cols, y: rows
 % view the zoomed in image
 lim = 100;
@@ -28,8 +34,10 @@ I_zoom = I(nx/2 - lim/2:nx/2 + lim/2+ delta, ny/2 - lim/2:ny/2 + lim/2 +delta);
 center = [mx/2 , my/2];% center of the circle;
 xc = center(1);
 yc = center(2);
-% I_zoom(xc,:) = nan;
-% I_zoom(:,yc) = nan;
+if removeNan==1
+    I_zoom(xc,:) = nan;
+    I_zoom(:,yc) = nan;
+end
 I_zoom  = I_zoom./ I_zoom_ref;
 
 % disaplay the Zoomed in image
@@ -48,7 +56,6 @@ colorbar;
 
 r = [50, 40, 30, 20, 10, 5, 1, 0.5];
 colors = num2cell(hsv(length(r)),2);%{[0.5,0.5,0], 'black', 'green', 'magenta', 'blue', 'red', 'cyan'};
-title_string = [BEDFORM,' ','$$\log^2\left | \left < FFT\left(\tan^{-1}\frac{S_{spanwise}}{S_{streamwise}}\right)\right >\right |$$'];
 
 % In polar coordinates
 angles = 0:.1:360 ; % location in degrees reckoned from x axis -- clockwise
@@ -64,7 +71,6 @@ for k =1:length(r)
 end
 title(title_string, 'interpreter','latex', 'fontsize',14)
 hold off
-
 
 %Do interpolation to get pixels 
 circ_vals = zeros(length(r), length(angles));
