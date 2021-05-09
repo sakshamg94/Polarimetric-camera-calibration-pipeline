@@ -115,7 +115,7 @@ flowCase_str = [BEDFORM,' ', FLOW_SPEED,' ',SUBMERGENCE];
 title_string = {flowCase_str, displayQuantity_str};
 
 % In polar coordinates
-angles = 0:1:360 ; % location in degrees reckoned from x axis -- clockwise
+angles = 0:.1:360 ; % location in degrees reckoned from x axis -- clockwise
 % polar_coord = [r(1)*ones(1, length(angles)); angles*pi/180] ;
 % In cartesian coordinates
     % create teh query points
@@ -140,7 +140,7 @@ hold on
 
 for k  = 1:length(r)
     circ_vals(k,:) = interp2(X,Y,I_zoom(:,:),Xq(k,:),Yq(k,:)) ; 
-    plot(circ_vals(k,:), 'color',colors{k}, 'LineWidth',1);
+    plot(angles,circ_vals(k,:), 'color',colors{k}, 'LineWidth',1);
 end
 ylabel(title_string, 'interpreter','latex', 'fontsize',11)
 xlabel('Image azimuth in degrees (reckoned from x axis clockwise)')
