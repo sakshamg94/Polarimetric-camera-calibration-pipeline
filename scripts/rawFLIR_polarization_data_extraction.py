@@ -68,9 +68,11 @@ def theta_phi(filename, file_location, num_images, material,
             im0 = (im0 - D0)/F0D0*m0
         
         #gaussian filtering
-        # 3.64px/mm or 0.27mm/px ; 2.7mm capillary length scale => 3.64*2.7 = 9.83px (~10px); 5px on each side to get x-y length scale of ~10px. 5px = 2sigma =>sigma = 2.5 both in x and y. Don't worry about the diagonal -- it has the least weight anyway in the convolution filter. kernel size is the coefficient of the gaussian [here (see examplke 40-1)](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-40-incremental-computation-gaussian)
+        # 3.64px/mm or 0.27mm/px ; 2.7mm capillary length scale => 3.64*2.7 = 9.83px (~10px); 
+        # 5px on each side to get x-y length scale of ~10px. 5px = 2sigma =>sigma = 2.5 both in x and y. Don't worry about the diagonal -- it has the least weight anyway in the convolution filter. kernel size is the coefficient of the gaussian [here (see examplke 40-1)](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-40-incremental-computation-gaussian)
 
-        # See here for how to use the gasussian kernel: https://www.tutorialkart.com/opencv/python/opencv-python-gaussian-image-smoothing/
+        # See here for how to use the gasussian kernel: 
+        # https://www.tutorialkart.com/opencv/python/opencv-python-gaussian-image-smoothing/
         if gaussian_smoothing_sigma!=0: # shoudl be 2.5 for water
             im0 = cv2.GaussianBlur(im0,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
             im90 = cv2.GaussianBlur(im90,ksize = (0,0), sigmaX =gaussian_smoothing_sigma)
