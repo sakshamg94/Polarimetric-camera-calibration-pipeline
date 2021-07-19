@@ -4,7 +4,7 @@ close all
 flow_idx  = 1;
 submergence_idx = 3;
 bed_idx = 1;
-quantity_idx = 3;
+quantity_idx = 2;
 
 quantities = {'slope_Azi_angle', 'slope_x', 'slope_y'};% to save
 title_quant = {'Slope Azimuth', 'Streamwise slope', 'Spanwise slope'};
@@ -22,7 +22,7 @@ DIST = 0;
 % for p =5%1: length(distances)
 %     DIST = distances(p);
 x = cell(4,1);
-for portion_idx =1:1:4
+for portion_idx =1%:1:4
     i=portion_idx;
 %     filename = ['corals','_QUANT',QUANTITY,'_DIST',num2str(DIST),...
 %         'cm_PORTION',num2str(portion_idx), '.mat'];
@@ -46,10 +46,10 @@ end
 %%
 running_sum = sum(x{1,1},3);
 nums = size(x{1,1},3);
-for i =2:1:size(x,1)
-    running_sum = running_sum+sum(x{i,1},3);
-    nums = nums+ size(x{1,1},3);
-end
+% for i =2:1:size(x,1)
+%     running_sum = running_sum+sum(x{i,1},3);
+%     nums = nums+ size(x{1,1},3);
+% end
 mean_mat = running_sum/nums;
 %%
 close 

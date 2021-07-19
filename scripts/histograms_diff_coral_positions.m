@@ -3,7 +3,7 @@ close all
 flow_idx  = 1;
 submergence_idx = 3;
 bed_idx = 1;
-quantity_idx = 2;
+quantity_idx = 3;
 
 quantities = {'slope_Azi_angle', 'slope_x', 'slope_y'};% to save
 title_quant = {'Slope Azimuth', 'Streamwise slope', 'Spanwise slope'};
@@ -23,7 +23,7 @@ DIST = 0;
 x = cell(4,1);
 for portion_idx =1:1:4
     i=portion_idx;
-    filename = ['boils_3fps_25Pump_25cmH',...
+    filename = ['boils_25fps_25Pump_25cmH',...
         '_QUANTITY_',QUANTITY,'_PORTION',num2str(portion_idx), '.mat'];
 %     filename = ['corals','_QUANT',QUANTITY,'_DIST',num2str(DIST),'cm_PORTION',num2str(portion_idx), '.mat'];
 %         filename = [BEDFORM,'_QUANT',QUANTITY,'_PORTION',...
@@ -56,15 +56,18 @@ a = cat(3,x{1,1}(1:10:end,1:10:end,:), ...
     x{2,1}(1:10:end,1:10:end,:),...
     x{3,1}(1:10:end,1:10:end,:),...
     x{4,1}(1:10:end,1:10:end,:));
+dat = a;
 %%
 close 
 figure(1)
 nbins = 4000;
+a = reshape(dat,[],1);
+[a, ptr] =  rmoutliers(a,'mean') ;
 [counts,edges] = histcounts(a,nbins);
 % h = histogram('BinEdges',edges,'BinCounts',counts,'Normalization','pdf');
 % h.EdgeColor = 'none';
 % h.FaceColor = 'blue';
-% h.FaceAlpha = 0;%.6;
+% h.FaceAlpha = 0.5;%.6;
 semilogy(edges(1:end-1), counts, 'r.', 'MarkerSize', 2);
 xlabel("bin")
 ylabel("Riemann normalized histogram")
